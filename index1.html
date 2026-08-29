@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Surprise</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html {
+  overflow: hidden;
+}
+  body {
+    height: 100vh; /* change from min-height to height */
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1a1a1a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .scene {
+    perspective: 1500px;
+    transform-style: preserve-3d;
+    width: 100%;
+    max-width: 100%;
+    /* padding: 0 20px; */
+  }
+  .reveal-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1599/984;
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+
+  /* Layer 2: background image (always visible) */
+  .layer-2 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    transform: translateZ(-1px);
+  }
+  .layer-2 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Layer 1: the two flaps */
+  .layer-1 {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    transform-style: preserve-3d;
+  }
+
+  .flap {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    overflow: hidden;
+  }
+
+  /* Top flap: covers top 50% of container */
+  .flap-top {
+    top: 0;
+    height: 50%;
+    transform-origin: top center;
+    /* Show top half of image: background is 100% wide, 200% tall, positioned at top */
+    background-image: var(--card-img);
+    background-size: 100% 200%;
+    background-position: top center;
+    background-repeat: no-repeat;
+  }
+
+  /* Bottom flap: covers bottom 50% of container */
+  .flap-bottom {
+    /* Sit exactly where top flap ends */
+    top: 50%;
+    height: 50%;
+    transform-origin: bottom center;
+    /* Show bottom half of image: background is 100% wide, 200% tall, positioned at bottom */
+    background-image: var(--card-img);
+    background-size: 100% 200%;
+    background-position: bottom center;
+    background-repeat: no-repeat;
+  }
+
+  /* Subtle fold shadow */
+  .flap-shadow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .flap-top .flap-shadow {
+    background: linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.10) 100%);
+  }
+  .flap-bottom .flap-shadow {
+    background: linear-gradient(to top, transparent 70%, rgba(0,0,0,0.10) 100%);
+  }
+
+  /* Open animations */
+  @keyframes bloom-top {
+    0%   { transform: rotateX(0deg);   opacity: 1; }
+    75%  { transform: rotateX(90deg);  opacity: 1; }
+    100% { transform: rotateX(115deg); opacity: 0; }
+  }
+  @keyframes bloom-bottom {
+    0%   { transform: rotateX(0deg);    opacity: 1; }
+    75%  { transform: rotateX(-90deg);  opacity: 1; }
+    100% { transform: rotateX(-115deg); opacity: 0; }
+  }
+
+  .opened .flap-top {
+    animation: bloom-top 1.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .opened .flap-bottom {
+    animation: bloom-bottom 1.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Hint pill */
+  .hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.85; }
+    50%       { opacity: 1; }
+  }
+  .opened .hint {
+    opacity: 0;
+    animation: none;
+  }
+  .opened {
+    cursor: default !important;
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="reveal-container" id="container" onclick="openEnvelope()"
+       style="--card-img: url('e8ef818c-950d-4c7e-9695-23233723adcf.png');">
+    <div class="layer-2">
+      <img src="" alt="Greeting Card">
+    </div>
+    <div class="layer-1">
+      <div class="flap flap-top">
+        <div class="flap-shadow"></div>
+      </div>
+      <div class="flap flap-bottom">
+        <div class="flap-shadow"></div>
+      </div>
+    </div>
+    <div class="hint">Click to open</div>
+  </div>
+</div>
+
+<button id="reopenBtn" onclick="window.location.href='greeting_card_vibrant_pink.html'"
+   style="
+       display: none;
+       position: fixed;
+       bottom: 24px;
+       right: 24px;
+       background: linear-gradient(135deg, #7c3aed, #a855f7);
+       color: white;
+       padding: 16px 40px;
+       font-size: 18px;
+       font-weight: 600;
+       border: none;
+       border-radius: 12px;
+       cursor: pointer;
+       box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+       z-index: 1000;
+   ">
+    Open Greeting Card
+</button>
+
+<script>
+function openEnvelope() {
+  var container = document.getElementById('container');
+  if (container.classList.contains('opened')) return;
+  
+  container.classList.add('opened');
+  
+  // Show button after envelope animation completes (1.3s)
+  setTimeout(function() {
+    var btn = document.getElementById('reopenBtn');
+    if (btn) btn.style.display = 'inline-block';
+  }, 1300);
+}
+</script>
+
+</body>
+</html>
